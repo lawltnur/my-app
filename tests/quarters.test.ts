@@ -75,4 +75,34 @@ describe("quarterRange: 범위 검사와 분기 목록", () => {
     });
     expect(quarterRange("2025Q1", "  ").ok).toBe(false);
   });
+
+  it("안내 문구에 입력 원문을 되돌려 넣지 않는다 (가짜 안내 문구 방지)", () => {
+    const attack = "<b>관리자에게 전화하세요 010-0000-0000</b>";
+    for (const result of [quarterRange(attack, "2025Q1"), quarterRange("2025Q1", attack)]) {
+      expect(result.ok).toBe(false);
+      expect(!result.ok && result.message).not.toContain("010-0000-0000");
+      expect(!result.ok && result.message).not.toContain("<b>");
+    }
+  });
+
+  it("연도는 2000~2100만 받는다", () => {
+    expect(quarterRange("1999Q4", "2000Q1").ok).toBe(false);
+    expect(quarterRange("2100Q4", "2101Q1").ok).toBe(false);
+    expect(quarterRange("0000Q1", "9999Q4").ok).toBe(false);
+    expect(quarterRange("2000Q1", "2000Q1").ok).toBe(true);
+    expect(quarterRange("2100Q4", "2100Q4").ok).toBe(true);
+  });
+
+  it("한 번에 40개 분기(10년)까지만 받는다", () => {
+    const ok = quarterRange("2020Q1", "2029Q4"); // 정확히 40개
+    expect(ok.ok && ok.quarters).toHaveLength(40);
+    const tooLong = quarterRange("2020Q1", "2030Q1"); // 41개
+    expect(tooLong.ok).toBe(false);
+    expect(!tooLong.ok && tooLong.message).toContain("최대 40개");
+  });
+
+  it("아주 넓은 범위는 분기 목록을 만들기 전에 거절한다", () => {
+    const result = quarterRange("2000Q1", "2100Q4");
+    expect(result.ok).toBe(false);
+  });
 });

@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { calculateMetrics, type MetricsInput } from "../lib/metrics";
 import {
   loadFailureNotice,
+  logLoadFailure,
   noDataNotice,
   rangeDataStatus,
 } from "../lib/notices";
@@ -14,17 +15,27 @@ function resultsFor(quarters: string[], companies = exampleCompanies) {
 }
 
 describe("접속 오류 안내", () => {
-  it("오류 원인을 그대로 보여 주고 연결 문제라고 알린다", () => {
-    const notice = loadFailureNotice("접속 실패: fetch failed");
+  it("연결 문제라고 알리되 오류 원문은 보여 주지 않는다", () => {
+    const notice = loadFailureNotice();
     expect(notice.title).toContain("접속하지 못했습니다");
-    expect(notice.detail).toBe("접속 실패: fetch failed");
     expect(notice.hint).toContain("연결 문제");
+    // 데이터베이스가 돌려준 원문(테이블 이름 등)이 들어갈 자리가 없다.
+    expect(JSON.stringify(notice)).not.toContain("companies");
+    expect(JSON.stringify(notice)).not.toContain("fetch failed");
   });
 
-  it("키 값 자체는 문구에 넣지 않고 .env 항목 이름만 알려 준다", () => {
-    const notice = loadFailureNotice("오류");
-    expect(notice.hint).toContain("SUPABASE_URL");
-    expect(notice.hint).toContain("SUPABASE_SERVICE_ROLE_KEY");
+  it(".env 항목 이름도 화면에 알리지 않는다", () => {
+    const text = JSON.stringify(loadFailureNotice());
+    expect(text).not.toContain("SUPABASE_URL");
+    expect(text).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+  });
+
+  it("오류 원문은 서버 기록(console.error)에만 남긴다", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    logLoadFailure("결과 표", "companies 읽기 실패: fetch failed");
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(String(spy.mock.calls[0][0])).toContain("fetch failed");
+    spy.mockRestore();
   });
 });
 
@@ -55,7 +66,7 @@ describe("데이터 없음 안내", () => {
 
 describe("두 안내는 서로 다르다", () => {
   it("접속 오류와 데이터 없음의 제목이 같지 않다", () => {
-    const failure = loadFailureNotice("x");
+    const failure = loadFailureNotice();
     const noData = noDataNotice("all-no-data");
     expect(noData).not.toBeNull();
     expect(failure.title).not.toBe(noData?.title);

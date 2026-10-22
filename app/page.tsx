@@ -1,7 +1,12 @@
 import { Suspense } from "react";
 import { loadRangeData, readOverview } from "@/lib/load";
 import { calculateMetrics } from "@/lib/metrics";
-import { loadFailureNotice, noDataNotice, rangeDataStatus } from "@/lib/notices";
+import {
+  loadFailureNotice,
+  logLoadFailure,
+  noDataNotice,
+  rangeDataStatus,
+} from "@/lib/notices";
 import { quarterRange } from "@/lib/quarters";
 import { DbErrorBox, NoDataBox } from "./notices";
 import { ResultTable } from "./result-table";
@@ -11,7 +16,8 @@ async function Overview() {
   const result = await readOverview();
 
   if (!result.ok) {
-    return <DbErrorBox notice={loadFailureNotice(result.message)} />;
+    logLoadFailure("안내 띠", result.message);
+    return <DbErrorBox notice={loadFailureNotice()} />;
   }
 
   return (
@@ -29,7 +35,8 @@ async function RangeSummary({ quarters }: { quarters: string[] }) {
   const loaded = await loadRangeData(quarters);
 
   if (!loaded.ok) {
-    return <DbErrorBox notice={loadFailureNotice(loaded.message)} />;
+    logLoadFailure("결과 표", loaded.message);
+    return <DbErrorBox notice={loadFailureNotice()} />;
   }
 
   const { companies, financials } = loaded.data;
