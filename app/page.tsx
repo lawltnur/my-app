@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { loadRangeData, readOverview } from "@/lib/load";
 import { calculateMetrics } from "@/lib/metrics";
 import { quarterRange } from "@/lib/quarters";
+import { ResultTable } from "./result-table";
 
 // Design Ref: §1 ③ 안내 띠 — 대기업 전체 수와 접속 결과를 보여 준다.
 async function Overview() {
@@ -24,8 +25,8 @@ async function Overview() {
   );
 }
 
-// Design Ref: §2-1 ③ — 입력한 분기마다 대기업 데이터가 있는지 보여 준다.
-// 데이터가 없는 분기는 "데이터 없음"으로 표시한다. (결과 표는 PLAN 11번에서 만든다.)
+// Design Ref: §2-1 ③④ — 입력한 분기의 대기업 데이터를 불러와 계산하고 결과 표로 보여 준다.
+// 데이터가 없는 분기는 표에서 "데이터 없음"으로 표시한다.
 async function RangeSummary({ quarters }: { quarters: string[] }) {
   const loaded = await loadRangeData(quarters);
 
@@ -40,20 +41,7 @@ async function RangeSummary({ quarters }: { quarters: string[] }) {
   const { companies, financials } = loaded.data;
   const results = calculateMetrics({ companies, financials, quarters });
 
-  return (
-    <ul className="flex flex-col gap-1 rounded bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
-      {results.map((r) => (
-        <li key={r.quarter}>
-          {r.quarter}:{" "}
-          {r.status === "no-data"
-            ? "데이터 없음"
-            : `대기업 ${r.companyCount}곳 중 재무 데이터 ${
-                financials.filter((f) => f.quarter === r.quarter).length
-              }건`}
-        </li>
-      ))}
-    </ul>
-  );
+  return <ResultTable results={results} />;
 }
 
 // 주소의 ?from=...&to=... 값 하나를 문자열로 꺼낸다. (없으면 빈 문자열)
@@ -75,7 +63,7 @@ async function QuarterForm({
   const range = submitted ? quarterRange(from, to) : null;
 
   return (
-    <section className="flex flex-col gap-3">
+    <section className="flex w-full min-w-0 flex-col gap-3">
       <form method="get" className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm">
           시작 분기
@@ -125,7 +113,7 @@ async function QuarterForm({
 export default function Home({ searchParams }: PageProps<"/">) {
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+      <main className="flex flex-1 w-full max-w-6xl flex-col gap-6 items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         {/* 앱 이름 제목 */}
         <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
           대기업 재무지표 분석 도구
