@@ -1,7 +1,12 @@
 import { buildWorkbook } from "@/lib/excel";
 import { loadRangeData } from "@/lib/load";
 import { calculateMetrics } from "@/lib/metrics";
-import { loadFailureNotice, noDataNotice, rangeDataStatus } from "@/lib/notices";
+import {
+  loadFailureNotice,
+  logLoadFailure,
+  noDataNotice,
+  rangeDataStatus,
+} from "@/lib/notices";
 import { quarterRange } from "@/lib/quarters";
 
 // Design Ref: §3-1 서버 주소 — 입력한 분기 범위의 결과를 엑셀 파일로 내려보낸다. (PLAN 13번)
@@ -22,9 +27,11 @@ export async function GET(request: Request) {
 
   const loaded = await loadRangeData(range.quarters);
   if (!loaded.ok) {
-    const failure = loadFailureNotice(loaded.message);
+    // 오류 원문은 서버 기록에만 남기고, 응답에는 고정 문구만 보낸다.
+    logLoadFailure("엑셀 내려받기", loaded.message);
+    const failure = loadFailureNotice();
     return Response.json(
-      { message: `${failure.title}: ${failure.detail}` },
+      { message: `${failure.title}. ${failure.detail}` },
       { status: 502 },
     );
   }

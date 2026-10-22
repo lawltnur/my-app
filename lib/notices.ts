@@ -12,12 +12,19 @@ export type Notice = {
 };
 
 // 데이터베이스에 접속하지 못했거나 읽는 중 오류가 났을 때의 안내
-export function loadFailureNotice(message: string): Notice {
+// 보안: 데이터베이스가 돌려준 오류 원문(테이블 이름 등)과 .env 항목 이름은 화면과 응답에 넣지 않는다.
+// 자세한 원인은 logLoadFailure로 서버 기록(Vercel 로그)에만 남긴다.
+export function loadFailureNotice(): Notice {
   return {
     title: "데이터베이스에 접속하지 못했습니다",
-    detail: message,
-    hint: "데이터가 없는 것이 아니라 연결 문제입니다. 잠시 뒤 다시 시도하고, 계속되면 .env의 SUPABASE_URL과 SUPABASE_SERVICE_ROLE_KEY를 확인해 주세요.",
+    detail: "데이터를 읽는 중 오류가 났습니다.",
+    hint: "데이터가 없는 것이 아니라 연결 문제입니다. 잠시 뒤 다시 시도해 주세요. 계속되면 서버 기록에서 자세한 원인을 확인하세요.",
   };
+}
+
+// 오류 원문을 서버 기록에만 남긴다. (브라우저로는 나가지 않는다.)
+export function logLoadFailure(where: string, message: string): void {
+  console.error(`[데이터베이스 오류] ${where}: ${message}`);
 }
 
 export type RangeDataStatus =
