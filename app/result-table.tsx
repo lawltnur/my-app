@@ -53,7 +53,7 @@ export function ResultTable({ results }: { results: MetricsResult }) {
                   <th className={head}>{r.quarter}</th>
                   <td
                     colSpan={1 + METRIC_KEYS.length * 3}
-                    className="border border-zinc-300 px-2 py-1 text-center text-zinc-500 dark:border-zinc-700"
+                    className="border border-amber-300 bg-amber-50 px-2 py-1 text-center text-amber-900"
                   >
                     데이터 없음
                   </td>
