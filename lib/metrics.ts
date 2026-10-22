@@ -1,6 +1,6 @@
 // Design Ref: §4 lib/metrics.ts — 4개 지표 계산의 입력·결과 형태를 한 곳에 정한다.
 // 화면 표와 엑셀 파일이 모두 이 결과 형태를 그대로 쓰므로 "화면 값 = 엑셀 값"이 구조로 보장된다.
-// 형태(타입)와 지표 이름 위에, 지표별 계산 코드를 PLAN 5~7번에서 하나씩 추가한다.
+// 형태(타입)와 지표 이름 위에, 지표별 계산(PLAN 5~7번)과 이를 묶는 calculateMetrics(PLAN 8번)가 있다.
 
 // ── 입력 ────────────────────────────────────────────────
 
@@ -176,4 +176,23 @@ export function calculateNetDebtToEbitda(
       netDebtToEbitdaOf,
     ),
   );
+}
+
+// ── 계산: 4개 지표를 분기별 결과로 묶기 (PLAN 8번) ──────────
+
+// 입력한 분기마다 4개 지표의 평균과 기업 수를 한 번에 구한다.
+// 화면 표와 엑셀 파일이 이 결과를 그대로 쓴다. 결과는 입력한 분기 순서와 같다.
+// 데이터가 없는 분기를 "no-data"로 가르는 일은 PLAN 10번에서 한다.
+export function calculateMetrics(input: MetricsInput): MetricsResult {
+  return input.quarters.map((quarter) => ({
+    quarter,
+    status: "ok" as const,
+    companyCount: input.companies.length,
+    metrics: {
+      netDebtToEbitda: calculateNetDebtToEbitda(input, quarter),
+      operatingCf: calculateOperatingCf(input, quarter),
+      interestCoverage: calculateInterestCoverage(input, quarter),
+      shortTermDebt: calculateShortTermDebt(input, quarter),
+    },
+  }));
 }
