@@ -2,7 +2,9 @@ import Image from "next/image";
 import { Suspense } from "react";
 import { loadRangeData, readOverview } from "@/lib/load";
 import { calculateMetrics } from "@/lib/metrics";
+import { loadFailureNotice, noDataNotice, rangeDataStatus } from "@/lib/notices";
 import { quarterRange } from "@/lib/quarters";
+import { DbErrorBox, NoDataBox } from "./notices";
 import { ResultTable } from "./result-table";
 
 // Design Ref: §1 ③ 안내 띠 — 대기업 전체 수와 접속 결과를 보여 준다.
@@ -10,11 +12,7 @@ async function Overview() {
   const result = await readOverview();
 
   if (!result.ok) {
-    return (
-      <p className="rounded bg-red-50 px-3 py-2 text-red-700">
-        데이터베이스 접속 오류: {result.message}
-      </p>
-    );
+    return <DbErrorBox notice={loadFailureNotice(result.message)} />;
   }
 
   return (
@@ -27,19 +25,20 @@ async function Overview() {
 
 // Design Ref: §2-1 ③④ — 입력한 분기의 대기업 데이터를 불러와 계산하고 결과 표로 보여 준다.
 // 데이터가 없는 분기는 표에서 "데이터 없음"으로 표시한다.
+// 접속 오류(빨강)와 데이터 없음(노랑)은 서로 다른 안내로 보여 준다. (PLAN 12번)
 async function RangeSummary({ quarters }: { quarters: string[] }) {
   const loaded = await loadRangeData(quarters);
 
   if (!loaded.ok) {
-    return (
-      <p className="rounded bg-red-50 px-3 py-2 text-red-700">
-        데이터베이스 접속 오류: {loaded.message}
-      </p>
-    );
+    return <DbErrorBox notice={loadFailureNotice(loaded.message)} />;
   }
 
   const { companies, financials } = loaded.data;
   const results = calculateMetrics({ companies, financials, quarters });
+
+  // 입력한 분기가 모두 데이터 없음이면(또는 대기업이 하나도 없으면) 표 대신 안내만 보여 준다.
+  const notice = noDataNotice(rangeDataStatus(companies.length, results));
+  if (notice) return <NoDataBox notice={notice} />;
 
   return <ResultTable results={results} />;
 }
