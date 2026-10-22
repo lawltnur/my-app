@@ -73,7 +73,7 @@ export type QuarterResult =
 // 계산 함수가 돌려주는 값: 입력한 분기 순서대로 한 분기에 하나씩
 export type MetricsResult = QuarterResult[];
 
-// ── 계산: 단기차입금·영업활동 현금흐름·이자보상배율 (PLAN 5~6번) ──
+// ── 계산: 4개 지표의 분기별 평균 (PLAN 5~7번) ──
 
 // 한 분기의 기업별 값을 대기업 순서대로 하나씩 꺼낸다.
 // 그 분기의 재무 줄이 없거나 값이 비어 있으면 null (0으로 보지 않는다).
@@ -146,6 +146,34 @@ export function calculateInterestCoverage(
       input.financials,
       quarter,
       (row) => row.interest_coverage,
+    ),
+  );
+}
+
+// 기업 한 곳의 순차입금/EBITDA = (총차입금 − 현금및현금성자산) / EBITDA
+// 계산할 수 없으면 null이며 그 기업은 평균에서 제외한다.
+//  - 총차입금·현금·EBITDA가 비어 있으면 0으로 보지 않고 제외
+//  - EBITDA가 0이면 나눌 수 없으므로 제외
+//  - EBITDA가 음수이면 계산된 값 그대로 평균에 포함
+export function netDebtToEbitdaOf(row: FinancialRow): number | null {
+  const { total_debt, cash, ebitda } = row;
+  if (total_debt === null || cash === null || ebitda === null) return null;
+  if (ebitda === 0) return null;
+  return (total_debt - cash) / ebitda;
+}
+
+// 한 분기의 순차입금/EBITDA 평균 (배)
+// 기업별 값을 먼저 구한 뒤 그 값들의 평균을 낸다. 전체 합계끼리 나누지 않는다.
+export function calculateNetDebtToEbitda(
+  input: MetricsInput,
+  quarter: string,
+): MetricResult {
+  return summarize(
+    valuesForQuarter(
+      input.companies,
+      input.financials,
+      quarter,
+      netDebtToEbitdaOf,
     ),
   );
 }
