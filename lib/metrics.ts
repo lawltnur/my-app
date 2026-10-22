@@ -1,6 +1,6 @@
 // Design Ref: §4 lib/metrics.ts — 4개 지표 계산의 입력·결과 형태를 한 곳에 정한다.
 // 화면 표와 엑셀 파일이 모두 이 결과 형태를 그대로 쓰므로 "화면 값 = 엑셀 값"이 구조로 보장된다.
-// 이 파일에는 형태(타입)와 지표 이름만 있고, 계산 코드는 PLAN 5~7번에서 추가한다.
+// 형태(타입)와 지표 이름 위에, 지표별 계산 코드를 PLAN 5~7번에서 하나씩 추가한다.
 
 // ── 입력 ────────────────────────────────────────────────
 
@@ -72,3 +72,64 @@ export type QuarterResult =
 
 // 계산 함수가 돌려주는 값: 입력한 분기 순서대로 한 분기에 하나씩
 export type MetricsResult = QuarterResult[];
+
+// ── 계산: 단기차입금·영업활동 현금흐름 (PLAN 5번) ──────────────
+
+// 한 분기의 기업별 값을 대기업 순서대로 하나씩 꺼낸다.
+// 그 분기의 재무 줄이 없거나 값이 비어 있으면 null (0으로 보지 않는다).
+export function valuesForQuarter(
+  companies: Company[],
+  financials: FinancialRow[],
+  quarter: string,
+  pick: (row: FinancialRow) => number | null,
+): (number | null)[] {
+  return companies.map((company) => {
+    const row = financials.find(
+      (f) => f.company_code === company.company_code && f.quarter === quarter,
+    );
+    return row ? pick(row) : null;
+  });
+}
+
+// 기업별 값들의 평균과 기업 수를 센다. (기업별 값을 먼저 구한 뒤 그 값들의 평균)
+// null은 평균에서 빼고 "제외한 기업 수"에 센다. 쓰인 기업이 0곳이면 평균은 null이다.
+export function summarize(values: (number | null)[]): MetricResult {
+  const used = values.filter((v): v is number => v !== null);
+  const average =
+    used.length === 0 ? null : used.reduce((sum, v) => sum + v, 0) / used.length;
+  return {
+    average,
+    used: used.length,
+    excluded: values.length - used.length,
+  };
+}
+
+// 한 분기의 단기차입금 평균 (값은 파일에 있는 그대로, 억원)
+export function calculateShortTermDebt(
+  input: MetricsInput,
+  quarter: string,
+): MetricResult {
+  return summarize(
+    valuesForQuarter(
+      input.companies,
+      input.financials,
+      quarter,
+      (row) => row.short_term_debt,
+    ),
+  );
+}
+
+// 한 분기의 영업활동 현금흐름 평균 (값은 파일에 있는 그대로, 억원)
+export function calculateOperatingCf(
+  input: MetricsInput,
+  quarter: string,
+): MetricResult {
+  return summarize(
+    valuesForQuarter(
+      input.companies,
+      input.financials,
+      quarter,
+      (row) => row.operating_cf,
+    ),
+  );
+}
