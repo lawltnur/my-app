@@ -28,12 +28,12 @@ export const expectedAnswers: Record<string, ExpectedQuarter> = {
     shortTermDebt: { average: 1100 / 3, used: 3, excluded: 0 },
   },
   // 2025Q2
-  //  순차입금/EBITDA: A=(900-500)/250=1.6, B 제외(총차입금 비어 있음), C=(1800-600)/400=3 → 4.6/2=2.3
+  //  순차입금/EBITDA: A 제외(현금 비어 있음), B 제외(총차입금 비어 있음), C=(1800-600)/400=3 → 3/1=3
   //  영업CF:         A=200, B=30, C 제외(비어 있음) → 230/2=115
   //  이자보상배율:   (6+3+4)/3=13/3
   //  단기차입금:     A=250, B 제외(비어 있음), C=650 → 900/2=450
   "2025Q2": {
-    netDebtToEbitda: { average: 2.3, used: 2, excluded: 1 },
+    netDebtToEbitda: { average: 3, used: 1, excluded: 2 },
     operatingCf: { average: 115, used: 2, excluded: 1 },
     interestCoverage: { average: 13 / 3, used: 3, excluded: 0 },
     shortTermDebt: { average: 450, used: 2, excluded: 1 },

@@ -42,6 +42,7 @@
    - 순차입금/EBITDA = (`total_debt` − `cash`) / `ebitda`
      - `ebitda`가 비었거나 0이면 제외, **음수면 그대로 포함**
      - `total_debt`가 비었으면 0으로 보지 말고 제외
+     - `cash`가 비었으면 0으로 보지 말고 제외
    - 영업활동 현금흐름 = `operating_cf`
    - 이자보상배율 = `interest_coverage`
    - 단기차입금 = `short_term_debt`

@@ -32,6 +32,7 @@ export const exampleCompanies: ExampleCompany[] = [
 //          C: EBITDA가 음수 → 계산된 값 그대로 평균에 포함, 이자보상배율이 비어 있음 → 제외
 // 2025Q2 — B: 총차입금·단기차입금이 비어 있음 → 해당 지표에서 제외 (0으로 보지 않음)
 //          C: 영업활동 현금흐름이 비어 있음 → 제외
+//          A: 현금및현금성자산이 비어 있음 → 순차입금/EBITDA에서 제외 (0으로 보지 않음)
 export const exampleFinancials: ExampleFinancial[] = [
   {
     company_code: "A",
@@ -67,7 +68,7 @@ export const exampleFinancials: ExampleFinancial[] = [
     company_code: "A",
     quarter: "2025Q2",
     total_debt: 900,
-    cash: 500,
+    cash: null,
     ebitda: 250,
     operating_cf: 200,
     interest_coverage: 6.0,
