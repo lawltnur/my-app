@@ -10,3 +10,10 @@ export function formatAverage(value: number | null): string {
     maximumFractionDigits: 2,
   });
 }
+
+// 엑셀에 넣을 숫자: 화면에 보이는 문구(formatAverage)를 그대로 숫자로 되돌린 값이다.
+// 같은 형식에서 만들기 때문에 "화면 값 = 엑셀 값"이 항상 같다. 평균을 구할 수 없으면 "누락"이다. (PLAN 13번)
+export function displayedAverage(value: number | null): number | "누락" {
+  const text = formatAverage(value);
+  return text === "누락" ? "누락" : Number(text.replace(/,/g, ""));
+}

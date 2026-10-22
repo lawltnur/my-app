@@ -40,7 +40,23 @@ async function RangeSummary({ quarters }: { quarters: string[] }) {
   const notice = noDataNotice(rangeDataStatus(companies.length, results));
   if (notice) return <NoDataBox notice={notice} />;
 
-  return <ResultTable results={results} />;
+  // 같은 분기 범위의 결과를 엑셀로 내려받는 주소. (화면 값 = 엑셀 값, PLAN 13번)
+  const exportUrl = `/api/export?from=${quarters[0]}&to=${quarters[quarters.length - 1]}`;
+
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-3">
+      <div>
+        <a
+          href={exportUrl}
+          download
+          className="inline-block rounded border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+        >
+          엑셀 내려받기
+        </a>
+      </div>
+      <ResultTable results={results} />
+    </div>
+  );
 }
 
 // 주소의 ?from=...&to=... 값 하나를 문자열로 꺼낸다. (없으면 빈 문자열)
