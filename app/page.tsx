@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Suspense } from "react";
 import { readOverview } from "@/lib/load";
+import { quarterRange } from "@/lib/quarters";
 
 // Design Ref: §1 ③ 안내 띠 — 대기업 전체 수와 접속 결과를 보여 준다.
 async function Overview() {
@@ -22,7 +23,68 @@ async function Overview() {
   );
 }
 
-export default function Home() {
+// 주소의 ?from=...&to=... 값 하나를 문자열로 꺼낸다. (없으면 빈 문자열)
+function firstValue(value: string | string[] | undefined): string {
+  return (Array.isArray(value) ? value[0] : value) ?? "";
+}
+
+// Design Ref: §1 ② 입력 칸 — 시작·끝 분기를 받아 형식과 순서를 검사한다.
+// 입력값은 주소(GET)로 전달되므로 비밀 값은 넣지 않는다.
+async function QuarterForm({
+  searchParams,
+}: {
+  searchParams: PageProps<"/">["searchParams"];
+}) {
+  const params = await searchParams;
+  const from = firstValue(params.from);
+  const to = firstValue(params.to);
+  const submitted = from !== "" || to !== "";
+  const range = submitted ? quarterRange(from, to) : null;
+
+  return (
+    <section className="flex flex-col gap-3">
+      <form method="get" className="flex flex-wrap items-end gap-3">
+        <label className="flex flex-col gap-1 text-sm">
+          시작 분기
+          <input
+            name="from"
+            defaultValue={from}
+            placeholder="예: 2024Q1"
+            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          끝 분기
+          <input
+            name="to"
+            defaultValue={to}
+            placeholder="예: 2025Q4"
+            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          />
+        </label>
+        <button
+          type="submit"
+          className="rounded bg-foreground px-4 py-2 text-background"
+        >
+          분석하기
+        </button>
+      </form>
+
+      {range && !range.ok && (
+        <p className="rounded bg-red-50 px-3 py-2 text-red-700">
+          {range.message}
+        </p>
+      )}
+      {range && range.ok && (
+        <p className="rounded bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
+          입력한 범위: {range.from} ~ {range.to} (분기 {range.quarters.length}개)
+        </p>
+      )}
+    </section>
+  );
+}
+
+export default function Home({ searchParams }: PageProps<"/">) {
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -30,6 +92,9 @@ export default function Home() {
         <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
           대기업 재무지표 분석 도구
         </h1>
+        <Suspense fallback={<p>입력 칸을 불러오는 중…</p>}>
+          <QuarterForm searchParams={searchParams} />
+        </Suspense>
         <Suspense fallback={<p>데이터베이스에 접속하는 중…</p>}>
           <Overview />
         </Suspense>
