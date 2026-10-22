@@ -1,4 +1,26 @@
 import Image from "next/image";
+import { Suspense } from "react";
+import { readOverview } from "@/lib/load";
+
+// Design Ref: §1 ③ 안내 띠 — 대기업 전체 수와 접속 결과를 보여 준다.
+async function Overview() {
+  const result = await readOverview();
+
+  if (!result.ok) {
+    return (
+      <p className="rounded bg-red-50 px-3 py-2 text-red-700">
+        데이터베이스 접속 오류: {result.message}
+      </p>
+    );
+  }
+
+  return (
+    <p className="rounded bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
+      대기업 전체 {result.largeCompanyCount}곳 · 재무 데이터{" "}
+      {result.financialRowCount}건
+    </p>
+  );
+}
 
 export default function Home() {
   return (
@@ -8,6 +30,9 @@ export default function Home() {
         <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
           대기업 재무지표 분석 도구
         </h1>
+        <Suspense fallback={<p>데이터베이스에 접속하는 중…</p>}>
+          <Overview />
+        </Suspense>
         <Image
           className="dark:invert h-5 w-[100px]"
           src="/next.svg"
