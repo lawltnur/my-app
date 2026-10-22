@@ -73,7 +73,7 @@ export type QuarterResult =
 // 계산 함수가 돌려주는 값: 입력한 분기 순서대로 한 분기에 하나씩
 export type MetricsResult = QuarterResult[];
 
-// ── 계산: 단기차입금·영업활동 현금흐름 (PLAN 5번) ──────────────
+// ── 계산: 단기차입금·영업활동 현금흐름·이자보상배율 (PLAN 5~6번) ──
 
 // 한 분기의 기업별 값을 대기업 순서대로 하나씩 꺼낸다.
 // 그 분기의 재무 줄이 없거나 값이 비어 있으면 null (0으로 보지 않는다).
@@ -130,6 +130,22 @@ export function calculateOperatingCf(
       input.financials,
       quarter,
       (row) => row.operating_cf,
+    ),
+  );
+}
+
+// 한 분기의 이자보상배율 평균 (값은 파일에 있는 그대로, 배수)
+// 음수 값도 그대로 평균에 넣고, 비어 있는 기업만 제외한다.
+export function calculateInterestCoverage(
+  input: MetricsInput,
+  quarter: string,
+): MetricResult {
+  return summarize(
+    valuesForQuarter(
+      input.companies,
+      input.financials,
+      quarter,
+      (row) => row.interest_coverage,
     ),
   );
 }
