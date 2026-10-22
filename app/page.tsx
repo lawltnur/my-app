@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Suspense } from "react";
-import { readOverview } from "@/lib/load";
+import { loadRangeData, readOverview } from "@/lib/load";
+import { calculateMetrics } from "@/lib/metrics";
 import { quarterRange } from "@/lib/quarters";
 
 // Design Ref: §1 ③ 안내 띠 — 대기업 전체 수와 접속 결과를 보여 준다.
@@ -20,6 +21,38 @@ async function Overview() {
       대기업 전체 {result.largeCompanyCount}곳 · 재무 데이터{" "}
       {result.financialRowCount}건
     </p>
+  );
+}
+
+// Design Ref: §2-1 ③ — 입력한 분기마다 대기업 데이터가 있는지 보여 준다.
+// 데이터가 없는 분기는 "데이터 없음"으로 표시한다. (결과 표는 PLAN 11번에서 만든다.)
+async function RangeSummary({ quarters }: { quarters: string[] }) {
+  const loaded = await loadRangeData(quarters);
+
+  if (!loaded.ok) {
+    return (
+      <p className="rounded bg-red-50 px-3 py-2 text-red-700">
+        데이터베이스 접속 오류: {loaded.message}
+      </p>
+    );
+  }
+
+  const { companies, financials } = loaded.data;
+  const results = calculateMetrics({ companies, financials, quarters });
+
+  return (
+    <ul className="flex flex-col gap-1 rounded bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
+      {results.map((r) => (
+        <li key={r.quarter}>
+          {r.quarter}:{" "}
+          {r.status === "no-data"
+            ? "데이터 없음"
+            : `대기업 ${r.companyCount}곳 중 재무 데이터 ${
+                financials.filter((f) => f.quarter === r.quarter).length
+              }건`}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -79,6 +112,11 @@ async function QuarterForm({
         <p className="rounded bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
           입력한 범위: {range.from} ~ {range.to} (분기 {range.quarters.length}개)
         </p>
+      )}
+      {range && range.ok && (
+        <Suspense fallback={<p>재무 데이터를 불러오는 중…</p>}>
+          <RangeSummary quarters={range.quarters} />
+        </Suspense>
       )}
     </section>
   );

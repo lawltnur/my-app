@@ -182,17 +182,26 @@ export function calculateNetDebtToEbitda(
 
 // 입력한 분기마다 4개 지표의 평균과 기업 수를 한 번에 구한다.
 // 화면 표와 엑셀 파일이 이 결과를 그대로 쓴다. 결과는 입력한 분기 순서와 같다.
-// 데이터가 없는 분기를 "no-data"로 가르는 일은 PLAN 10번에서 한다.
+// 대기업의 재무 줄이 하나도 없는 분기는 계산하지 않고 "no-data"(데이터 없음)로 돌려준다. (PLAN 10번)
 export function calculateMetrics(input: MetricsInput): MetricsResult {
-  return input.quarters.map((quarter) => ({
-    quarter,
-    status: "ok" as const,
-    companyCount: input.companies.length,
-    metrics: {
-      netDebtToEbitda: calculateNetDebtToEbitda(input, quarter),
-      operatingCf: calculateOperatingCf(input, quarter),
-      interestCoverage: calculateInterestCoverage(input, quarter),
-      shortTermDebt: calculateShortTermDebt(input, quarter),
-    },
-  }));
+  const companyCodes = new Set(input.companies.map((c) => c.company_code));
+
+  return input.quarters.map((quarter): QuarterResult => {
+    const hasData = input.financials.some(
+      (f) => f.quarter === quarter && companyCodes.has(f.company_code),
+    );
+    if (!hasData) return { quarter, status: "no-data" };
+
+    return {
+      quarter,
+      status: "ok",
+      companyCount: input.companies.length,
+      metrics: {
+        netDebtToEbitda: calculateNetDebtToEbitda(input, quarter),
+        operatingCf: calculateOperatingCf(input, quarter),
+        interestCoverage: calculateInterestCoverage(input, quarter),
+        shortTermDebt: calculateShortTermDebt(input, quarter),
+      },
+    };
+  });
 }
