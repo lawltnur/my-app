@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
+import { chartSeries } from "../lib/chart";
 import { SHEET_NAME, buildWorkbook, excelHeaders } from "../lib/excel";
 import { displayedAverage, formatAverage } from "../lib/format";
 import {
@@ -120,7 +121,8 @@ describe("지표 하나만 내려받는 엑셀", () => {
     const buffer = await buildWorkbook(results, ["operatingCf"]);
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
-    const header = (workbook.worksheets[0].getRow(1).values as unknown[]).slice(1);
+    // 표는 5열이고, 그 오른쪽 6번째 열은 그래프용 숨긴 열이다.
+    const header = (workbook.worksheets[0].getRow(1).values as unknown[]).slice(1, 6);
     expect(header).toEqual(excelHeaders(["operatingCf"]));
     expect(header).toEqual([
       "분기",
@@ -141,7 +143,63 @@ describe("지표 하나만 내려받는 엑셀", () => {
     for (const rowNumber of [2, 3]) {
       const fullRow = (full.worksheets[0].getRow(rowNumber).values as unknown[]).slice(1);
       const singleRow = (single.worksheets[0].getRow(rowNumber).values as unknown[]).slice(1);
-      expect(singleRow.slice(2)).toEqual(fullRow.slice(start, start + 3));
+      expect(singleRow.slice(2, 5)).toEqual(fullRow.slice(start, start + 3));
     }
+  });
+});
+
+// 지표 하나만 받는 엑셀에는 엑셀 자체 선 그래프가 들어 있고, 4개 전체 파일에는 없다.
+describe("엑셀 그래프", () => {
+  const results = calculateMetrics(inputFor(["2025Q1", "2025Q2", "2030Q1"]));
+
+  async function zipOf(buffer: Buffer) {
+    const { default: JSZip } = await import("jszip");
+    return JSZip.loadAsync(buffer);
+  }
+
+  it("지표 하나 파일에는 그래프 부품과 연결이 들어 있다", async () => {
+    const zip = await zipOf(await buildWorkbook(results, ["operatingCf"]));
+    expect(zip.file("xl/charts/chart1.xml")).not.toBeNull();
+    expect(zip.file("xl/drawings/drawing1.xml")).not.toBeNull();
+    expect(zip.file("xl/worksheets/_rels/sheet1.xml.rels")).not.toBeNull();
+    const types = await zip.file("[Content_Types].xml")!.async("string");
+    expect(types).toContain("/xl/charts/chart1.xml");
+    expect(types).toContain("/xl/drawings/drawing1.xml");
+    const sheet = await zip.file("xl/worksheets/sheet1.xml")!.async("string");
+    expect(sheet).toContain('<drawing xmlns:r=');
+    expect(sheet.indexOf("<drawing")).toBeGreaterThan(sheet.indexOf("<pageMargins"));
+  });
+
+  it("그래프 값은 숨긴 열(F)에 있고 누락·데이터 없음은 빈칸이다", async () => {
+    const buffer = await buildWorkbook(results, ["operatingCf"]);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
+    const sheet = workbook.worksheets[0];
+    expect(sheet.getColumn(6).hidden).toBe(true);
+    expect(sheet.getCell(1, 6).value).toBe("그래프용 값");
+    const series = chartSeries(results, "operatingCf");
+    series.forEach((p, i) => {
+      const cell = sheet.getCell(i + 2, 6).value;
+      expect(cell).toBe(p.value === null ? null : p.value);
+    });
+    expect(series[2].value).toBeNull(); // 데이터 없는 분기
+  });
+
+  it("그래프 설명에 제목·단위·값 범위가 들어 있고 값이 없는 분기의 점은 없다", async () => {
+    const zip = await zipOf(await buildWorkbook(results, ["operatingCf"]));
+    const xml = await zip.file("xl/charts/chart1.xml")!.async("string");
+    expect(xml).toContain("영업활동 현금흐름 분기별 평균");
+    expect(xml).toContain("억원");
+    expect(xml).toContain("$F$2:$F$4");
+    expect(xml).toContain('<c:dispBlanksAs val="gap"/>');
+    const series = chartSeries(results, "operatingCf");
+    const valueIdx = [...xml.matchAll(/<c:numCache>[\s\S]*?<\/c:numCache>/g)][0][0];
+    const have = [...valueIdx.matchAll(/<c:pt idx="(\d+)"/g)].map((m) => Number(m[1]));
+    expect(have).toEqual(series.flatMap((p, i) => (p.value === null ? [] : [i])));
+  });
+
+  it("4개 지표 전체 파일에는 그래프가 없다", async () => {
+    const zip = await zipOf(await buildWorkbook(results));
+    expect(zip.file("xl/charts/chart1.xml")).toBeNull();
   });
 });
