@@ -304,3 +304,43 @@ body {
     transform: translate3d(-6vw, -6vh, 0) scale(1.2);
   }
 }
+
+/* ── "쓰인 기업 수"를 누르면 뜨는 기업 목록 창 ── */
+.used-link {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0 0.25rem;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.used-link:hover {
+  color: #0b4fc2;
+}
+.used-dialog {
+  margin: auto;
+  width: min(640px, calc(100vw - 2rem));
+  max-height: calc(100vh - 3rem);
+  padding: 1.4rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 30px 80px -20px rgba(15, 27, 45, 0.35);
+}
+.used-dialog::backdrop {
+  background: rgba(15, 27, 45, 0.28);
+  backdrop-filter: blur(4px);
+}
+.used-scroll {
+  max-height: min(55vh, 460px);
+  overflow: auto;
+  border-radius: 14px;
+}
+.used-scroll .glass-table th {
+  position: sticky;
+  top: 0;
+}
