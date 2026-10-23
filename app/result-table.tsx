@@ -1,5 +1,10 @@
 import { formatAverage } from "@/lib/format";
-import { METRIC_KEYS, METRIC_LABELS, type MetricsResult } from "@/lib/metrics";
+import {
+  METRIC_KEYS,
+  METRIC_LABELS,
+  METRIC_UNITS,
+  type MetricsResult,
+} from "@/lib/metrics";
 
 // Design Ref: §1 ④ 결과 표 — 행은 분기, 열은 4개 지표 각각의 평균·평균에 쓰인 기업 수·제외한 기업 수.
 // 계산은 lib/metrics.ts에서만 하고, 이 파일은 받은 결과를 그대로 보여 주기만 한다.
@@ -28,7 +33,10 @@ export function ResultTable({ results }: { results: MetricsResult }) {
               </th>
               {METRIC_KEYS.map((key) => (
                 <th key={key} colSpan={3} className={head}>
-                  {METRIC_LABELS[key]}
+                  {METRIC_LABELS[key]}{" "}
+                  <span className="font-normal text-zinc-500">
+                    ({METRIC_UNITS[key]})
+                  </span>
                 </th>
               ))}
             </tr>
