@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 대기업 재무지표 분석 도구
 
-## Getting Started
+재정경제부 자금시장분석과 업무용(사용자 1명) 내부 도구입니다. 시작 분기와 끝 분기를 입력하면 **대기업만** 골라 4개 지표의 **분기별 평균**을 계산해 표로 보여 주고, 같은 값을 **엑셀(시트 1개)** 로 내려받을 수 있습니다.
 
-First, run the development server:
+## 무엇을 하나요
+
+1. 시작·끝 분기를 입력합니다. (예: `2022Q1` ~ `2024Q4`, 최대 40분기)
+2. Supabase에 저장된 재무 데이터에서 대기업만 불러옵니다.
+3. 분기마다 4개 지표의 평균과 "평균에 쓰인 기업 수 / 제외한 기업 수"를 보여 줍니다.
+4. 화면과 똑같은 값을 엑셀로 내려받습니다.
+
+| 지표 | 계산 | 단위 |
+|---|---|---|
+| 순차입금/EBITDA | (총차입금 − 현금) ÷ EBITDA, 기업별로 구한 뒤 평균 | 배 |
+| 영업활동 현금흐름 | 기업별 값의 평균 | 억원 |
+| 이자보상배율 | 기업별 값의 평균 | 배 |
+| 단기차입금 | 기업별 값의 평균 | 억원 |
+
+계산 규칙 요약
+- 값이 비어 있는 기업은 0으로 채우지 않고 그 지표의 평균에서만 제외하며, 화면에는 "누락"으로 표시합니다.
+- EBITDA가 0이거나 비어 있으면 순차입금/EBITDA에서 제외하고, 음수는 그대로 포함합니다.
+- 데이터가 없는 분기는 계산하지 않고 "데이터 없음"으로 표시합니다.
+- 화면과 엑셀은 같은 계산 함수의 결과를 쓰므로 값이 항상 같습니다.
+
+## 문서
+
+- [PRD.md](PRD.md) — 제품 요구사항 (무엇을 왜 만드는가)
+- [PLAN.md](PLAN.md) — 개발 계획과 성공 기준
+- [DESIGN.md](DESIGN.md) — 화면·데이터 흐름·기술 선택
+- [CHECK.md](CHECK.md) — 점검 결과와 남은 개선 목록
+- [CLAUDE.md](CLAUDE.md) — 개발 규칙
+
+## 기술 스택
+
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Supabase · ExcelJS · Vitest · Vercel
+
+## 실행 방법
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm test         # 계산 검증 테스트
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+프로젝트 루트에 `.env` 파일을 만들고 아래 두 값을 넣어야 데이터를 읽을 수 있습니다. (이 파일은 저장소에 올리지 않습니다.)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`SUPABASE_SERVICE_ROLE_KEY`는 서버 쪽 코드에서만 사용합니다.
 
-## Learn More
+## 데이터 적재
 
-To learn more about Next.js, take a look at the following resources:
+앱 화면에서 엑셀을 올리는 기능은 없습니다. 원본 엑셀은 별도 스크립트로 Supabase에 저장합니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run ingest -- <원본 엑셀 경로>           # 미리보기 (저장하지 않음)
+npm run ingest -- <원본 엑셀 경로> --write   # 실제 저장
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+기업코드로 연결되지 않은 기업이나 알 수 없는 단위가 있으면 멈추고 알려 줍니다. 새 파일의 빈 칸은 이미 저장된 값을 지우지 않습니다.
 
-## Deploy on Vercel
+## 검증
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+예시 데이터(기업 3곳 × 2분기)로 직접 계산한 값과 4개 지표가 소수점 10자리까지 일치하는지 테스트로 확인합니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 보안
+
+- 비밀 값(`.env`)과 `node_modules`는 저장소에 올리지 않습니다.
+- 화면과 응답에 데이터베이스 오류 원문이나 입력 원문을 보여 주지 않습니다.
+- 검색 엔진 노출을 막는 설정(noindex)과 보안 헤더를 적용했습니다.
