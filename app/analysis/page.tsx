@@ -73,13 +73,13 @@ export default function AnalysisPage({ searchParams }: PageProps<"/analysis">) {
           지표를 누르면 분기별 평균과 기업 수가 나오는 화면으로 이동합니다.
         </p>
       </div>
+      <UploadPreview />
       <Suspense fallback={<p>입력 칸을 불러오는 중…</p>}>
         <Metrics searchParams={searchParams} />
       </Suspense>
       <Suspense fallback={<p>데이터베이스에 접속하는 중…</p>}>
         <Overview />
       </Suspense>
-      <UploadPreview />
     </main>
   );
 }
