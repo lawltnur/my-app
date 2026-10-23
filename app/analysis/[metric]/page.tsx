@@ -12,6 +12,7 @@ import {
 } from "@/lib/notices";
 import { quarterRange } from "@/lib/quarters";
 import { DbErrorBox, NoDataBox } from "../../notices";
+import { MetricChart } from "../../metric-chart";
 import { firstValue, RangeForm } from "../../range-form";
 import { ResultTable } from "../../result-table";
 
@@ -53,6 +54,7 @@ async function RangeSummary({ quarters, metric }: { quarters: string[]; metric: 
           모든 지표 한 번에 엑셀 내려받기
         </a>
       </div>
+      <MetricChart results={results} metric={metric} />
       <ResultTable results={results} metric={metric} />
     </div>
   );
