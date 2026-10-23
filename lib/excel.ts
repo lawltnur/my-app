@@ -1,4 +1,6 @@
 import ExcelJS from "exceljs";
+import { chartSeries } from "./chart";
+import { addLineChart } from "./excel-chart";
 import { displayedAverage } from "./format";
 import {
   METRIC_KEYS,
@@ -11,7 +13,7 @@ import {
 // Design Ref: §4 lib/excel.ts — 결과를 시트 1개짜리 엑셀 파일로 만든다. (PLAN 13번)
 // 화면 표와 같은 계산 결과(MetricsResult)와 같은 표시 형식(lib/format.ts)을 쓰므로 화면 값 = 엑셀 값이다.
 // 행은 분기, 열은 대기업 전체 수와 지표 각각의 평균·쓰인 기업 수·제외한 기업 수이다.
-// 지표는 기본이 4개 전체이고, 지표 하나만 골라 내려받을 때는 그 지표만 넣는다.
+// 지표는 기본이 4개 전체이고, 지표 하나만 골라 내려받을 때는 그 지표만 넣고 엑셀 자체 선 그래프도 함께 넣는다.
 
 export const SHEET_NAME = "분기별 평균";
 
@@ -77,5 +79,29 @@ export async function buildWorkbook(
     column.width = i === 0 ? 10 : 18;
   });
 
-  return Buffer.from(await workbook.xlsx.writeBuffer());
+  if (keys.length !== 1) return Buffer.from(await workbook.xlsx.writeBuffer());
+
+  // 지표 하나만 받을 때: 표 오른쪽에 선 그래프를 넣는다.
+  // 그래프가 읽는 값은 숨긴 열(F)에 둔다. 평균 열의 "누락"/"데이터 없음" 글자를 엑셀이 0으로 그리지 않게, 값이 없으면 빈칸으로 둔다.
+  const metric = keys[0];
+  const points = chartSeries(results, metric);
+  const helperColumn = headers.length + 1; // 표 바로 오른쪽 열
+  sheet.getCell(1, helperColumn).value = "그래프용 값";
+  points.forEach((p, i) => {
+    if (p.value !== null) sheet.getCell(i + 2, helperColumn).value = p.value;
+  });
+  sheet.getColumn(helperColumn).hidden = true;
+  const withHelper = Buffer.from(await workbook.xlsx.writeBuffer());
+
+  return addLineChart(withHelper, {
+    sheetName: SHEET_NAME,
+    title: `${METRIC_LABELS[metric]} 분기별 평균`,
+    unit: METRIC_UNITS[metric],
+    seriesName: headers[2],
+    seriesNameCell: "C1",
+    categoryColumn: "A",
+    valueColumn: "F",
+    points,
+    anchor: { fromCol: helperColumn, toCol: helperColumn + 10, rows: 20 },
+  });
 }
