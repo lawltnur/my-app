@@ -10,6 +10,7 @@ import {
 import { quarterRange } from "@/lib/quarters";
 import { DbErrorBox, NoDataBox } from "./notices";
 import { ResultTable } from "./result-table";
+import { UploadPreview } from "./upload-preview";
 
 // Design Ref: §1 ③ 안내 띠 — 대기업 전체 수와 접속 결과를 보여 준다.
 async function Overview() {
@@ -145,6 +146,7 @@ export default function Home({ searchParams }: PageProps<"/">) {
         <Suspense fallback={<p>데이터베이스에 접속하는 중…</p>}>
           <Overview />
         </Suspense>
+        <UploadPreview />
       </main>
     </div>
   );
