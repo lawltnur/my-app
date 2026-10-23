@@ -22,7 +22,7 @@ async function Overview() {
   }
 
   return (
-    <p className="rounded bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
+    <p className="glass-soft rise rise-3 px-4 py-2 text-sm">
       대기업 전체 {result.largeCompanyCount}곳 · 재무 데이터{" "}
       {result.financialRowCount}건
     </p>
@@ -51,12 +51,12 @@ async function RangeSummary({ quarters }: { quarters: string[] }) {
   const exportUrl = `/api/export?from=${quarters[0]}&to=${quarters[quarters.length - 1]}`;
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-3">
+    <div className="glass rise flex w-full min-w-0 flex-col gap-3 p-5">
       <div>
         <a
           href={exportUrl}
           download
-          className="inline-block rounded border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+          className="btn-glass"
         >
           엑셀 내려받기
         </a>
@@ -85,7 +85,7 @@ async function QuarterForm({
   const range = submitted ? quarterRange(from, to) : null;
 
   return (
-    <section className="flex w-full min-w-0 flex-col gap-3">
+    <section className="glass rise rise-2 flex w-full min-w-0 flex-col gap-3 p-5">
       <form method="get" className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm">
           시작 분기
@@ -93,7 +93,7 @@ async function QuarterForm({
             name="from"
             defaultValue={from}
             placeholder="예: 2024Q1"
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+            className="field"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -102,24 +102,24 @@ async function QuarterForm({
             name="to"
             defaultValue={to}
             placeholder="예: 2025Q4"
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+            className="field"
           />
         </label>
         <button
           type="submit"
-          className="rounded bg-foreground px-4 py-2 text-background"
+          className="btn-glass btn-solid"
         >
           분석하기
         </button>
       </form>
 
       {range && !range.ok && (
-        <p className="rounded bg-red-50 px-3 py-2 text-red-700">
+        <p className="rounded-2xl border border-red-300/50 bg-red-500/20 px-4 py-2 text-red-100">
           {range.message}
         </p>
       )}
       {range && range.ok && (
-        <p className="rounded bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
+        <p className="glass-soft px-4 py-2 text-sm">
           입력한 범위: {range.from} ~ {range.to} (분기 {range.quarters.length}개)
         </p>
       )}
@@ -134,11 +134,13 @@ async function QuarterForm({
 
 export default function Home({ searchParams }: PageProps<"/">) {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-6xl flex-col gap-6 items-center py-16 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="flex flex-col flex-1 items-center">
+      <main className="flex flex-1 w-full max-w-6xl flex-col gap-6 px-5 py-12 sm:px-10 sm:py-16">
         {/* 앱 이름 제목 */}
-        <h1 className="text-4xl font-bold tracking-tight text-black dark:text-zinc-50">
-          대기업 재무지표 분석 도구
+        <h1 className="display text-4xl leading-tight sm:text-5xl">
+          <span className="ln">
+            <span>대기업 재무지표 분석 도구</span>
+          </span>
         </h1>
         <Suspense fallback={<p>입력 칸을 불러오는 중…</p>}>
           <QuarterForm searchParams={searchParams} />
