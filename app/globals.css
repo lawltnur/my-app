@@ -226,3 +226,47 @@ body {
     transition: none !important;
   }
 }
+
+/* ── 처음 화면의 고층 건물 ─────────────────── */
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+/* 건물 그림: 아래에 깔고, 위쪽으로 갈수록 서서히 사라지게 해서 글자를 가리지 않는다. */
+.skyline {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: -1;
+  width: 100%;
+  height: 78%;
+  opacity: 0.55;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 55%, transparent 100%);
+}
+/* 유리구슬 참고 이미지의 은은한 빛번짐 */
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  left: 50%;
+  top: 36%;
+  width: min(900px, 120vw);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(214, 226, 243, 0.45) 55%, transparent 100%);
+}
+@keyframes towerGrow {
+  from {
+    opacity: 0;
+    transform: scaleY(0.82) translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tower {
+  animation: towerGrow 1.4s var(--e-out) both;
+}
