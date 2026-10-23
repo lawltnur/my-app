@@ -1,6 +1,11 @@
 import ExcelJS from "exceljs";
 import { displayedAverage } from "./format";
-import { METRIC_KEYS, METRIC_LABELS, type MetricsResult } from "./metrics";
+import {
+  METRIC_KEYS,
+  METRIC_LABELS,
+  METRIC_UNITS,
+  type MetricsResult,
+} from "./metrics";
 
 // Design Ref: §4 lib/excel.ts — 결과를 시트 1개짜리 엑셀 파일로 만든다. (PLAN 13번)
 // 화면 표와 같은 계산 결과(MetricsResult)와 같은 표시 형식(lib/format.ts)을 쓰므로 화면 값 = 엑셀 값이다.
@@ -16,7 +21,7 @@ export function excelHeaders(): string[] {
     "분기",
     "대기업 전체",
     ...METRIC_KEYS.flatMap((key) => [
-      `${METRIC_LABELS[key]} 평균`,
+      `${METRIC_LABELS[key]} 평균(${METRIC_UNITS[key]})`,
       `${METRIC_LABELS[key]} 쓰인 기업 수`,
       `${METRIC_LABELS[key]} 제외한 기업 수`,
     ]),

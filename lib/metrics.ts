@@ -52,6 +52,15 @@ export const METRIC_LABELS: Record<MetricKey, string> = {
   shortTermDebt: "단기차입금",
 };
 
+// 지표별 단위. 금액은 억원(원본의 재무단위를 억원으로 맞춰 저장한다), 비율은 배수이다. (PRD must 2)
+// 화면 표와 엑셀 머리글이 같은 단위를 쓰도록 한 곳에 둔다.
+export const METRIC_UNITS: Record<MetricKey, string> = {
+  netDebtToEbitda: "배",
+  operatingCf: "억원",
+  interestCoverage: "배",
+  shortTermDebt: "억원",
+};
+
 // 한 지표의 한 분기 결과
 export type MetricResult = {
   // 평균. 평균에 쓰인 기업이 0곳이면 null이며, 화면과 엑셀에는 "누락"으로 쓴다.
