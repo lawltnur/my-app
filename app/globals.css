@@ -1,26 +1,270 @@
 @import "tailwindcss";
 
+/* 디자인 참고: Aurora Weather 리퀴드 글래스 대시보드 — 어두운 폭풍 배경 위에 반투명 유리 패널을 얹는 스타일.
+   모양(색·유리·글꼴·움직임)만 가져왔고, 화면 구성과 내용은 이 앱 그대로이다. */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #ffffff;
+  --glass-line: rgba(255, 255, 255, 0.2);
+  --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --e-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-inter-tight);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  background: #04121b;
+}
+
+/* 폭풍 구름 사진 대신 같은 분위기(짙은 청록·남색)를 그라데이션으로 만든 배경 */
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-feature-settings: "kern" 1;
+  background-color: #04121b;
+  background-image:
+    radial-gradient(ellipse 80% 45% at 70% 108%, rgba(46, 110, 84, 0.55), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 15% 30%, rgba(30, 78, 96, 0.5), transparent 70%),
+    radial-gradient(ellipse 70% 40% at 85% 0%, rgba(20, 52, 78, 0.7), transparent 70%),
+    linear-gradient(180deg, #06202c 0%, #04141d 55%, #03100f 100%);
+  background-attachment: fixed;
+}
+
+/* 왼쪽이 조금 더 어둡게 보이는 비네트 — 글자가 또렷하게 읽히도록 */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(105deg, rgba(4, 16, 24, 0.34) 0%, rgba(4, 16, 24, 0.2) 40%, rgba(4, 16, 24, 0.06) 78%, transparent 100%),
+    linear-gradient(180deg, rgba(4, 16, 24, 0.12) 0%, transparent 22%);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 유리 패널 ─────────────────────────────── */
+.glass {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.258) 24%,
+    rgba(255, 255, 255, 0.252) 78%,
+    rgba(255, 255, 255, 0.232) 100%
+  );
+  -webkit-backdrop-filter: blur(26px) saturate(118%);
+  backdrop-filter: blur(26px) saturate(118%);
+  border: 1px solid var(--glass-line);
+  border-radius: 24px;
+}
+
+/* 한 번 지나가는 반짝임 (처음 나타날 때만) */
+.glass::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.17) 50%, transparent 100%);
+  transform: translate3d(-150%, 0, 0) skewX(-18deg);
+  animation: sheen 1.15s var(--e-soft) 1.4s 1 both;
+}
+
+.glass-soft {
+  background: rgba(255, 255, 255, 0.15);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+}
+
+/* ── 버튼·입력·탭 ─────────────────────────── */
+.btn-glass {
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.175);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+  border: 1px solid var(--glass-line);
+  transition: background 0.2s var(--e-soft), transform 0.2s var(--e-soft);
+}
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+.btn-glass:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+.btn-solid {
+  background: #fff;
+  color: #04121b;
+  border-color: #fff;
+}
+.btn-solid:hover {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.field {
+  border-radius: 14px;
+  padding: 0.6rem 0.9rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-line);
+  outline: none;
+}
+.field::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.tab {
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-line);
+  transition: background 0.2s var(--e-soft);
+}
+.tab:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.tab[aria-selected="true"] {
+  background: #fff;
+  color: #04121b;
+  font-weight: 600;
+  border-color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ── 표 ───────────────────────────────────── */
+.glass-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.glass-table th,
+.glass-table td {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0.4rem 0.6rem;
+}
+.glass-table th {
+  white-space: nowrap;
+  text-align: center;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+}
+.glass-table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.glass-table td.nodata {
+  text-align: center;
+  background: rgba(255, 190, 70, 0.18);
+  color: #ffe4a8;
+}
+
+/* ── 제목 글꼴 ─────────────────────────────── */
+.display {
+  font-family: var(--font-inter-tight), var(--font-inter), sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* ── 처음 나타나는 움직임 ──────────────────── */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lineUp {
+  from {
+    transform: translateY(115%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes wipeDown {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes sheen {
+  from {
+    transform: translate3d(-150%, 0, 0) skewX(-18deg);
+  }
+  to {
+    transform: translate3d(260%, 0, 0) skewX(-18deg);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.rise {
+  animation: riseIn 0.8s var(--e-out) both;
+}
+.rise-1 {
+  animation-delay: 0.15s;
+}
+.rise-2 {
+  animation-delay: 0.3s;
+}
+.rise-3 {
+  animation-delay: 0.45s;
+}
+.rise-4 {
+  animation-delay: 0.6s;
+}
+.ln {
+  display: block;
+  overflow: hidden;
+}
+.ln > span {
+  display: block;
+  animation: lineUp 1.05s var(--e-out) 0.2s both;
+}
+
+/* 움직임을 줄이는 설정이면 모든 움직임을 끈다 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .glass::after {
+    display: none;
+  }
 }

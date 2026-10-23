@@ -48,9 +48,9 @@ export function UploadPreview() {
   }
 
   return (
-    <section className="flex w-full min-w-0 flex-col gap-3 rounded border border-zinc-300 p-4 dark:border-zinc-700">
+    <section className="glass rise rise-4 flex w-full min-w-0 flex-col gap-3 p-5">
       <h2 className="text-lg font-semibold">엑셀 파일 검사 (미리보기)</h2>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-white/80">
         원본 엑셀(.xlsx, 4MB 이하)을 올리면 읽을 수 있는 파일인지 검사하고 저장된 값과
         비교해 보여 줍니다. 이 화면에서는 데이터를 저장하지 않습니다. 저장은{" "}
         <code>npm run ingest -- 파일 --write</code> 로 합니다.
@@ -66,14 +66,14 @@ export function UploadPreview() {
         <button
           type="submit"
           disabled={busy}
-          className="rounded bg-foreground px-4 py-2 text-sm text-background disabled:opacity-50"
+          className="btn-glass btn-solid"
         >
           {busy ? "검사하는 중…" : "검사하기"}
         </button>
       </form>
 
       {result && !result.ok && (
-        <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-2xl border border-red-300/50 bg-red-500/20 px-4 py-2 text-sm text-red-50">
           <p>{result.message}</p>
           {result.problems && (
             <ul className="mt-1 list-disc pl-5">
@@ -86,7 +86,7 @@ export function UploadPreview() {
       )}
 
       {result && result.ok && (
-        <div className="flex flex-col gap-1 rounded bg-zinc-100 px-3 py-2 text-sm dark:bg-zinc-900">
+        <div className="glass-soft flex flex-col gap-1 px-4 py-3 text-sm">
           <p>
             검사 통과 — 기업 {n(result.companies)}곳, 그중 대기업 {n(result.largeCompanies)}곳의
             재무 데이터 {n(result.financialRows)}줄
