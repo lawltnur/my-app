@@ -8,7 +8,7 @@ export function DbErrorBox({ notice }: { notice: Notice }) {
   return (
     <div
       role="alert"
-      className="w-full rounded-2xl border border-red-300/50 bg-red-500/20 px-4 py-3 text-red-50 backdrop-blur-md"
+      className="w-full rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800"
     >
       <p className="font-semibold">⚠ {notice.title}</p>
       <p className="text-sm">{notice.detail}</p>
@@ -22,7 +22,7 @@ export function NoDataBox({ notice }: { notice: Notice }) {
   return (
     <div
       role="status"
-      className="w-full rounded-2xl border border-amber-300/50 bg-amber-400/20 px-4 py-3 text-amber-50 backdrop-blur-md"
+      className="w-full rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900"
     >
       <p className="font-semibold">{notice.title}</p>
       <p className="text-sm">{notice.detail}</p>

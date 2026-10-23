@@ -50,7 +50,7 @@ export function UploadPreview() {
   return (
     <section className="glass rise rise-4 flex w-full min-w-0 flex-col gap-3 p-5">
       <h2 className="text-lg font-semibold">엑셀 파일 검사 (미리보기)</h2>
-      <p className="text-sm text-white/80">
+      <p className="text-sm text-soft">
         원본 엑셀(.xlsx, 4MB 이하)을 올리면 읽을 수 있는 파일인지 검사하고 저장된 값과
         비교해 보여 줍니다. 이 화면에서는 데이터를 저장하지 않습니다. 저장은{" "}
         <code>npm run ingest -- 파일 --write</code> 로 합니다.
@@ -73,7 +73,7 @@ export function UploadPreview() {
       </form>
 
       {result && !result.ok && (
-        <div className="rounded-2xl border border-red-300/50 bg-red-500/20 px-4 py-2 text-sm text-red-50">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
           <p>{result.message}</p>
           {result.problems && (
             <ul className="mt-1 list-disc pl-5">
