@@ -12,7 +12,7 @@ export default function Home() {
           <span>대기업 재무지표</span>
         </span>
         <span className="ln">
-          <span>분석 도구</span>
+          <span>분석</span>
         </span>
       </h1>
       <p className="rise rise-3 mt-6 max-w-xl text-lg text-soft">
