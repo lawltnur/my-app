@@ -1,4 +1,4 @@
--- 대기업 재무지표 분석 도구: Supabase 테이블 정의 (데이터는 포함하지 않음)
+-- 대기업 재무지표 분석: Supabase 테이블 정의 (데이터는 포함하지 않음)
 -- 금액 단위는 억원, interest_coverage는 배수(단위 없음)
 
 create table if not exists public.companies (
