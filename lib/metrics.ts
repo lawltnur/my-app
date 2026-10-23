@@ -187,6 +187,39 @@ export function calculateNetDebtToEbitda(
   );
 }
 
+// ── 평균에 쓰인 기업 목록 ──────────────────────────────
+
+// 지표별로 기업 한 곳의 값을 꺼내는 규칙. "쓰인 기업 목록"이 평균 계산과 같은 규칙(값이 null이면 제외)을 쓴다.
+export const METRIC_PICKS: Record<MetricKey, (row: FinancialRow) => number | null> = {
+  netDebtToEbitda: netDebtToEbitdaOf,
+  operatingCf: (row) => row.operating_cf,
+  interestCoverage: (row) => row.interest_coverage,
+  shortTermDebt: (row) => row.short_term_debt,
+};
+
+export type UsedCompany = { company: Company; value: number };
+
+// 한 분기에서 그 지표의 평균에 쓰인 기업과 기업별 값. (쓰인 기업 수 = 이 목록의 길이)
+// 순서는 기업 이름 순이다. 값이 비어 평균에서 제외된 기업은 들어가지 않는다.
+export function usedCompanyValues(
+  input: MetricsInput,
+  quarter: string,
+  metric: MetricKey,
+): UsedCompany[] {
+  const values = valuesForQuarter(
+    input.companies,
+    input.financials,
+    quarter,
+    METRIC_PICKS[metric],
+  );
+  const used: UsedCompany[] = [];
+  input.companies.forEach((company, i) => {
+    const value = values[i];
+    if (value !== null) used.push({ company, value });
+  });
+  return used.sort((x, y) => x.company.name.localeCompare(y.company.name, "ko"));
+}
+
 // ── 계산: 4개 지표를 분기별 결과로 묶기 (PLAN 8번) ──────────
 
 // 입력한 분기마다 4개 지표의 평균과 기업 수를 한 번에 구한다.
