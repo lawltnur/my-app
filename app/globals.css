@@ -226,3 +226,81 @@ body {
     transition: none !important;
   }
 }
+
+/* ── 처음 화면의 연한 푸른 그라데이션 (애플 공식 사이트 같은 은은한 빛번짐) ── */
+.aurora-wrap {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.aurora {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(186, 220, 255, 0.55), transparent 70%),
+    linear-gradient(180deg, #f3f8ff 0%, #ffffff 70%);
+}
+/* 천천히 떠다니는 연한 빛덩어리 세 개 */
+.aurora i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.75;
+  will-change: transform;
+}
+.aurora i:nth-child(1) {
+  width: 46vw;
+  height: 46vw;
+  min-width: 320px;
+  min-height: 320px;
+  left: -8%;
+  top: -12%;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.85), rgba(147, 197, 253, 0) 70%);
+  animation: auroraA 16s ease-in-out infinite alternate;
+}
+.aurora i:nth-child(2) {
+  width: 40vw;
+  height: 40vw;
+  min-width: 280px;
+  min-height: 280px;
+  right: -6%;
+  top: 4%;
+  background: radial-gradient(circle, rgba(165, 224, 250, 0.85), rgba(165, 224, 250, 0) 70%);
+  animation: auroraB 19s ease-in-out infinite alternate;
+}
+.aurora i:nth-child(3) {
+  width: 44vw;
+  height: 34vw;
+  min-width: 300px;
+  min-height: 240px;
+  left: 28%;
+  bottom: -14%;
+  background: radial-gradient(circle, rgba(196, 207, 255, 0.8), rgba(196, 207, 255, 0) 70%);
+  animation: auroraC 22s ease-in-out infinite alternate;
+}
+@keyframes auroraA {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(10vw, 6vh, 0) scale(1.15);
+  }
+}
+@keyframes auroraB {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  to {
+    transform: translate3d(-8vw, 8vh, 0) scale(0.92);
+  }
+}
+@keyframes auroraC {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-6vw, -6vh, 0) scale(1.2);
+  }
+}

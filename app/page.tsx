@@ -3,7 +3,12 @@ import Link from "next/link";
 // 처음 화면(소개) — 도구 이름을 크게 보여 주고, 분석하기를 누르면 지표 목록 화면(/analysis)으로 간다.
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
+    <main className="aurora-wrap flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
+      <div className="aurora" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
       <p className="rise rise-1 mb-5 rounded-full border border-[var(--line)] bg-white px-4 py-1.5 text-sm text-soft shadow-sm">
         재정경제부 자금시장분석과
       </p>
