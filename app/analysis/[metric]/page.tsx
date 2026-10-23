@@ -41,12 +41,16 @@ async function RangeSummary({ quarters, metric }: { quarters: string[]; metric: 
 
   // 같은 분기 범위의 결과를 엑셀로 내려받는 주소. (엑셀에는 4개 지표가 모두 들어 있고 값은 화면과 같다.)
   const exportUrl = `/api/export?from=${quarters[0]}&to=${quarters[quarters.length - 1]}`;
+  const metricExportUrl = `${exportUrl}&metric=${METRIC_SLUGS[metric]}`;
 
   return (
     <div className="glass rise flex w-full min-w-0 flex-col gap-3 p-5">
-      <div>
+      <div className="flex flex-wrap gap-2">
+        <a href={metricExportUrl} download className="btn-glass btn-solid">
+          선택한 지표만 엑셀 내려받기
+        </a>
         <a href={exportUrl} download className="btn-glass">
-          엑셀 내려받기 (4개 지표 전체)
+          모든 지표 한 번에 엑셀 내려받기
         </a>
       </div>
       <ResultTable results={results} metric={metric} />

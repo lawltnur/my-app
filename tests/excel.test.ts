@@ -111,3 +111,37 @@ describe("displayedAverage", () => {
     expect(displayedAverage(null)).toBe("누락");
   });
 });
+
+// 지표 하나만 고른 엑셀 — 머리글과 값이 4개 전체 파일의 해당 열과 같고, 화면 값과도 같다.
+describe("지표 하나만 내려받는 엑셀", () => {
+  const results = calculateMetrics(inputFor(["2025Q1", "2025Q2"]));
+
+  it("머리글이 분기, 대기업 전체, 그 지표의 3열이다", async () => {
+    const buffer = await buildWorkbook(results, ["operatingCf"]);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
+    const header = (workbook.worksheets[0].getRow(1).values as unknown[]).slice(1);
+    expect(header).toEqual(excelHeaders(["operatingCf"]));
+    expect(header).toEqual([
+      "분기",
+      "대기업 전체",
+      "영업활동 현금흐름 평균(억원)",
+      "영업활동 현금흐름 쓰인 기업 수",
+      "영업활동 현금흐름 제외한 기업 수",
+    ]);
+  });
+
+  it("값이 4개 전체 파일의 같은 열과 같다", async () => {
+    const full = await readBack(results);
+    const buffer = await buildWorkbook(results, ["interestCoverage"]);
+    const single = new ExcelJS.Workbook();
+    await single.xlsx.load(buffer as unknown as ArrayBuffer);
+    const fullHeader = (full.worksheets[0].getRow(1).values as unknown[]).slice(1);
+    const start = fullHeader.indexOf("이자보상배율 평균(배)");
+    for (const rowNumber of [2, 3]) {
+      const fullRow = (full.worksheets[0].getRow(rowNumber).values as unknown[]).slice(1);
+      const singleRow = (single.worksheets[0].getRow(rowNumber).values as unknown[]).slice(1);
+      expect(singleRow.slice(2)).toEqual(fullRow.slice(start, start + 3));
+    }
+  });
+});
